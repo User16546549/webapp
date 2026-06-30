@@ -8,14 +8,14 @@ jobs:
     name: Tests unitaires & couverture
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '18'
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: coverage-report
           path: coverage/
@@ -25,14 +25,14 @@ jobs:
     needs: unit-test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: coverage-report
           path: coverage/
-      - uses: SonarSource/sonarqube-scan-action@v5
+      - uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703 # v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
@@ -41,8 +41,8 @@ jobs:
     name: Scan dependances (Trivy)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: aquasecurity/trivy-action@master
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: aquasecurity/trivy-action@cf5c088a69634cd13ccddc735d7926162c31f9a6 # master
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -55,12 +55,12 @@ jobs:
     needs: [sonar-check, dependency-scan]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Build
         run: docker build -t webapp:${{ github.sha }} .
       - name: Sauvegarde image
         run: docker save webapp:${{ github.sha }} -o webapp.tar
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: docker-image
           path: webapp.tar
@@ -70,12 +70,12 @@ jobs:
     needs: build-image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: docker-image
       - name: Chargement image
         run: docker load -i webapp.tar
-      - uses: aquasecurity/trivy-action@master
+      - uses: aquasecurity/trivy-action@cf5c088a69634cd13ccddc735d7926162c31f9a6 # master
         with:
           scan-type: 'image'
           image-ref: 'webapp:${{ github.sha }}'
